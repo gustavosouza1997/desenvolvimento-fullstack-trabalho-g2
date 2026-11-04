@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empréstimos</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    {% include '_mensagens.html' %}
+    <h1>Empréstimos</h1>
+    <h2>Registrar empréstimo</h2>
+    <form method="post">
+        {% csrf_token %}{{ form.as_p }}
+        <button type="submit">Registrar empréstimo</button>
+    </form>
+    <h2>Transações</h2>
+    <table border="1">
+        <thead><tr><th>Cliente</th><th>Livro</th><th>Retirada</th><th>Devolução prevista</th><th>Devolução</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>
+            {% for emprestimo in emprestimos %}
+                <tr>
+                    <td>{{ emprestimo.cliente.nome }}</td><td>{{ emprestimo.livro.titulo }}</td><td>{{ emprestimo.data_retirada }}</td>
+                    <td>{{ emprestimo.data_prevista_devolucao }}</td><td>{{ emprestimo.data_devolucao|default:'-' }}</td><td>{{ emprestimo.get_status_display }}</td>
+                    <td>
+                        {% if emprestimo.status == 'ATIVO' %}
+                            <form method="post" action="{% url 'devolver_emprestimo' emprestimo.id %}">{% csrf_token %}<button type="submit">Registrar devolução</button></form>
+                            <a href="{% url 'renovar_emprestimo' emprestimo.id %}">Renovar</a>
+                            <a href="{% url 'registrar_ocorrencia' emprestimo.id %}">Perda/dano</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}<tr><td colspan="7">Nenhum empréstimo registrado.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

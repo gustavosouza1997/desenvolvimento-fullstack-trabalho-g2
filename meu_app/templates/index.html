@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão de Biblioteca</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    {% include '_mensagens.html' %}
+    <h1>Sistema de Gestão de Biblioteca</h1>
+    {% if user.is_authenticated %}
+        <p>Funcionário: {{ user.get_full_name|default:user.username }}</p>
+        <h2>Resumo</h2>
+        <ul>
+            <li>Livros cadastrados: {{ livros_disponiveis }}</li>
+            <li>Clientes ativos: {{ clientes_ativos }}</li>
+            <li>Empréstimos ativos: {{ emprestimos_ativos }}</li>
+            <li>Reservas disponíveis para retirada: {{ reservas_disponiveis }}</li>
+        </ul>
+    {% else %}
+        <p><a href="{% url 'login' %}">Entrar como funcionário</a></p>
+    {% endif %}
+</body>
+</html>

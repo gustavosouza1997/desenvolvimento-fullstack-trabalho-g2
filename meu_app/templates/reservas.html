@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservas</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    {% include '_mensagens.html' %}
+    <h1>Reservas</h1>
+    <h2>Reservar livro indisponível</h2>
+    <form method="post">{% csrf_token %}{{ form.as_p }}<button type="submit">Reservar</button></form>
+    <table border="1">
+        <thead><tr><th>Cliente</th><th>Livro</th><th>Data</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody>
+            {% for reserva in reservas %}
+                <tr>
+                    <td>{{ reserva.cliente.nome }}</td><td>{{ reserva.livro.titulo }}</td><td>{{ reserva.data_reserva }}</td><td>{{ reserva.get_status_display }}</td>
+                    <td>
+                        {% if reserva.status == 'DISPONIVEL' %}<strong>Cliente notificado: livro disponível</strong>{% endif %}
+                        {% if reserva.status == 'PENDENTE' or reserva.status == 'DISPONIVEL' %}
+                            <form method="post" action="{% url 'cancelar_reserva' reserva.id %}">{% csrf_token %}<button type="submit">Cancelar reserva</button></form>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}<tr><td colspan="5">Nenhuma reserva registrada.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

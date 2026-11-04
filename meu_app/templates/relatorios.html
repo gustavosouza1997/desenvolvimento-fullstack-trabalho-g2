@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios de empréstimos</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    <h1>Relatórios de empréstimos</h1>
+    <form method="get">
+        {{ form.as_p }}
+        <button type="submit">Filtrar período</button>
+    </form>
+    <p>Total de empréstimos no período: {{ total_emprestimos }}</p>
+    <h2>Livros mais emprestados</h2>
+    <ol>{% for item in livros_mais_emprestados %}<li>{{ item.livro__titulo }}: {{ item.total }}</li>{% empty %}<li>Sem registros.</li>{% endfor %}</ol>
+    <h2>Clientes com mais empréstimos</h2>
+    <ol>{% for item in clientes_mais_emprestimos %}<li>{{ item.cliente__nome }}: {{ item.total }}</li>{% empty %}<li>Sem registros.</li>{% endfor %}</ol>
+</body>
+</html>

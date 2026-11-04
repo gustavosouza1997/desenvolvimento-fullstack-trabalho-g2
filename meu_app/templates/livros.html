@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo de livros</title>
+</head>
+<body>
+    {% include '_menu.html' %}
+    {% include '_mensagens.html' %}
+    <h1>Catálogo de livros</h1>
+    <p><a href="{% url 'cadastrar_livro' %}">Cadastrar livro</a></p>
+    <form method="get">
+        <label>Pesquisar por título, autor, gênero ou ISBN <input type="search" name="pesquisa" value="{{ pesquisa }}"></label>
+        {% if todos %}<input type="hidden" name="todos" value="1">{% endif %}
+        <button type="submit">Pesquisar</button>
+    </form>
+    {% if todos %}<p><a href="{% url 'listar_livros' %}">Ocultar livros removidos</a></p>{% else %}<p><a href="?todos=1">Mostrar livros removidos</a></p>{% endif %}
+    <table border="1">
+        <thead><tr><th>Título</th><th>Autor</th><th>Editora</th><th>Ano</th><th>ISBN</th><th>Gênero</th><th>Disponíveis</th><th>Status</th><th>Capa</th><th>Ações</th></tr></thead>
+        <tbody>
+            {% for livro in livros %}
+                <tr>
+                    <td>{{ livro.titulo }}</td><td>{{ livro.autor }}</td><td>{{ livro.editora }}</td><td>{{ livro.ano_publicacao }}</td>
+                    <td>{{ livro.isbn }}</td><td>{{ livro.genero }}</td><td>{{ livro.quantidade_disponivel }} / {{ livro.quantidade_total }}</td>
+                    <td>{{ livro.ativo|yesno:'Ativo,Removido' }}</td>
+                    <td>{% if livro.capa %}<a href="{{ livro.capa.url }}">Arquivo da capa</a>{% else %}Não informada{% endif %}</td>
+                    <td>
+                        <a href="{% url 'editar_livro' livro.id %}">Editar</a>
+                        {% if livro.ativo %}<form method="post" action="{% url 'excluir_livro' livro.id %}">{% csrf_token %}<button type="submit">Remover do catálogo</button></form>{% endif %}
+                    </td>
+                </tr>
+            {% empty %}<tr><td colspan="10">Nenhum livro encontrado.</td></tr>{% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
