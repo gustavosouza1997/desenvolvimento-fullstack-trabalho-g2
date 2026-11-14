@@ -1,0 +1,95 @@
+{% if user.is_authenticated %}
+{% with rota=request.resolver_match.url_name %}
+
+<header class="barra-topo nao-imprimir">
+    <a class="marca" href="{% url 'index' %}">
+        <span class="marca-icone">{% include '_icone.html' with nome='logo' %}</span>
+        <span class="marca-nome">Biblioteca</span>
+    </a>
+    <label for="menu-toggle" class="botao-menu" title="Menu">
+        {% include '_icone.html' with nome='menu' tamanho=22 %}
+    </label>
+</header>
+
+<aside class="barra-lateral nao-imprimir">
+
+    <a class="marca" href="{% url 'index' %}">
+        <span class="marca-icone">{% include '_icone.html' with nome='logo' %}</span>
+        <span class="marca-nome">Biblioteca <small>Sistema de gestão</small></span>
+    </a>
+
+    <a class="lateral-cta" href="{% url 'cadastrar_emprestimo' %}">
+        {% include '_icone.html' with nome='mais' tamanho=16 %} Novo empréstimo
+    </a>
+
+    <nav>
+        <div class="menu-grupo">
+            <a class="menu-link {% if rota == 'index' %}ativo{% endif %}" href="{% url 'index' %}">
+                {% include '_icone.html' with nome='inicio' %} Início
+            </a>
+        </div>
+
+        <div class="menu-grupo">
+            <span class="menu-grupo-titulo">Acervo</span>
+            <a class="menu-link {% if 'livro' in rota %}ativo{% endif %}" href="{% url 'listar_livros' %}">
+                {% include '_icone.html' with nome='livro' %} Livros
+            </a>
+        </div>
+
+        <div class="menu-grupo">
+            <span class="menu-grupo-titulo">Circulação</span>
+            <a class="menu-link {% if 'emprestimo' in rota or rota == 'registrar_ocorrencia' %}ativo{% endif %}" href="{% url 'listar_emprestimos' %}">
+                {% include '_icone.html' with nome='emprestimo' %} Empréstimos
+            </a>
+            <a class="menu-link {% if 'reserva' in rota %}ativo{% endif %}" href="{% url 'listar_reservas' %}">
+                {% include '_icone.html' with nome='reserva' %} Reservas
+            </a>
+        </div>
+
+        <div class="menu-grupo">
+            <span class="menu-grupo-titulo">Pessoas</span>
+            <a class="menu-link {% if 'cliente' in rota %}ativo{% endif %}" href="{% url 'listar_clientes' %}">
+                {% include '_icone.html' with nome='clientes' %} Clientes
+            </a>
+            {% if user.is_superuser %}
+            <a class="menu-link {% if 'funcionario' in rota %}ativo{% endif %}" href="{% url 'listar_funcionarios' %}">
+                {% include '_icone.html' with nome='funcionarios' %} Funcionários
+            </a>
+            {% endif %}
+        </div>
+
+        {% if user.is_superuser %}
+        <div class="menu-grupo">
+            <span class="menu-grupo-titulo">Gestão</span>
+            <a class="menu-link {% if rota == 'relatorios' %}ativo{% endif %}" href="{% url 'relatorios' %}">
+                {% include '_icone.html' with nome='relatorio' %} Relatórios
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <div class="menu-usuario">
+        <div class="usuario-info">
+            <span class="avatar">{{ user.first_name|default:user.username|first }}</span>
+            <div>
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <small>{% if user.is_superuser %}Administrador{% else %}Funcionário{% endif %}</small>
+            </div>
+        </div>
+
+        <a class="menu-link {% if rota == 'alterar_senha' %}ativo{% endif %}" href="{% url 'alterar_senha' %}">
+            {% include '_icone.html' with nome='senha' %} Alterar senha
+        </a>
+
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="menu-link menu-link-botao">
+                {% include '_icone.html' with nome='sair' %} Sair
+            </button>
+        </form>
+    </div>
+
+</aside>
+
+{% endwith %}
+{% endif %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Novo empréstimo{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_emprestimos' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Empréstimos</a>
+        <h1>Registrar empréstimo</h1>
+        <p>Somente clientes não bloqueados e livros com exemplares disponíveis aparecem na lista.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Registrar empréstimo</button>
+                <a class="botao botao-secundario" href="{% url 'listar_emprestimos' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

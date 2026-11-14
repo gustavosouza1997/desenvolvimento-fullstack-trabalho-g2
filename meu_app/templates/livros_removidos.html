@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Livros removidos{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_livros' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Catálogo</a>
+        <h1>Livros removidos</h1>
+        <p>Livros fora do catálogo. Restaure para voltarem a ser emprestados.</p>
+    </div>
+</div>
+
+<div class="painel">
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>ISBN</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for livro in livros %}
+                <tr>
+                    <td class="titulo-celular forte">{{ livro.titulo }}</td>
+                    <td data-label="Autor">{{ livro.autor }}</td>
+                    <td data-label="ISBN"><span class="texto-suave">{{ livro.isbn }}</span></td>
+                    <td class="td-acoes">
+                        <form method="post" action="{% url 'restaurar_livro' livro.id %}" class="form-acao" onsubmit="return confirm('Restaurar este livro no catálogo?')">{% csrf_token %}<button type="submit" class="botao-acao positivo">Restaurar</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="vazio">Nenhum livro removido.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Relatórios{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Relatório de empréstimos</h1>
+        <p>
+            <strong>{{ total_emprestimos }}</strong> empréstimo{{ total_emprestimos|pluralize }} no período
+            {% if form.cleaned_data.data_inicial %} — de {{ form.cleaned_data.data_inicial|date:'d/m/Y' }}{% endif %}
+            {% if form.cleaned_data.data_final %} até {{ form.cleaned_data.data_final|date:'d/m/Y' }}{% endif %}
+        </p>
+    </div>
+    <div class="acoes nao-imprimir">
+        <button class="botao botao-secundario" onclick="window.print()">{% include '_icone.html' with nome='imprimir' tamanho=16 %} Imprimir relatório</button>
+    </div>
+</div>
+
+<div class="painel nao-imprimir">
+    <div class="painel-corpo">
+        <form method="GET">
+            {% include '_campos.html' with form=form classe='grade-filtros' %}
+            <div class="form-botoes">
+                <button type="submit" class="botao">Gerar relatório</button>
+                <a class="botao botao-secundario" href="{% url 'relatorios' %}">Limpar filtros</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<section class="painel">
+
+    {% if tipo == 'livros' %}
+    <div class="painel-cabecalho"><h2>Livros mais emprestados</h2></div>
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Livro</th>
+                    <th>Autor</th>
+                    <th class="numero">Empréstimos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% with maior=livros_mais_emprestados.0.total %}
+                {% for item in livros_mais_emprestados %}
+                <tr>
+                    <td data-label="Posição"><span class="posicao posicao-{{ forloop.counter }}">{{ forloop.counter }}º</span></td>
+                    <td data-label="Livro" class="forte">{{ item.livro__titulo }}</td>
+                    <td data-label="Autor">{{ item.livro__autor }}</td>
+                    <td data-label="Empréstimos" class="numero">
+                        {{ item.total }}
+                        <span class="barra-progresso nao-imprimir"><span style="width: {% widthratio item.total maior 100 %}%"></span></span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="vazio">Sem empréstimos no período.</td></tr>
+                {% endfor %}
+                {% endwith %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if tipo == 'clientes' %}
+    <div class="painel-cabecalho"><h2>Clientes com mais empréstimos</h2></div>
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th>Posição</th>
+                    <th>Cliente</th>
+                    <th>CPF</th>
+                    <th class="numero">Empréstimos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% with maior=clientes_mais_emprestimos.0.total %}
+                {% for item in clientes_mais_emprestimos %}
+                <tr>
+                    <td data-label="Posição"><span class="posicao posicao-{{ forloop.counter }}">{{ forloop.counter }}º</span></td>
+                    <td data-label="Cliente" class="forte">{{ item.cliente__nome }}</td>
+                    <td data-label="CPF">{{ item.cliente__cpf }}</td>
+                    <td data-label="Empréstimos" class="numero">
+                        {{ item.total }}
+                        <span class="barra-progresso nao-imprimir"><span style="width: {% widthratio item.total maior 100 %}%"></span></span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="vazio">Sem empréstimos no período.</td></tr>
+                {% endfor %}
+                {% endwith %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    {% if tipo == 'emprestimos' %}
+    <div class="painel-cabecalho"><h2>Empréstimos do período</h2></div>
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th>Retirada</th>
+                    <th>Livro</th>
+                    <th>Cliente</th>
+                    <th>Devolução prevista</th>
+                    <th>Situação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emprestimo in emprestimos %}
+                <tr>
+                    <td data-label="Retirada">{{ emprestimo.data_retirada|date:'d/m/Y' }}</td>
+                    <td data-label="Livro" class="forte">{{ emprestimo.livro.titulo }}</td>
+                    <td data-label="Cliente">{{ emprestimo.cliente.nome }}</td>
+                    <td data-label="Devolução prevista">{{ emprestimo.data_prevista_devolucao|date:'d/m/Y' }}</td>
+                    <td data-label="Situação">
+                        {% if emprestimo.status == 'A' %}
+                            <span class="etiqueta etiqueta-ok">{{ emprestimo.get_status_display }}</span>
+                        {% elif emprestimo.status == 'D' %}
+                            <span class="etiqueta">{{ emprestimo.get_status_display }}</span>
+                        {% else %}
+                            <span class="etiqueta etiqueta-aviso">{{ emprestimo.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="vazio">Sem empréstimos no período.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</section>
+
+{% endblock %}

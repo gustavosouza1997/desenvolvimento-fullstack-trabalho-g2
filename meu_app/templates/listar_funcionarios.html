@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Funcionários{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Funcionários</h1>
+        <p>{{ funcionarios|length }} funcionário{{ funcionarios|length|pluralize }} com acesso ativo</p>
+    </div>
+    <div class="acoes nao-imprimir">
+        <a class="botao botao-secundario" href="{% url 'funcionarios_inativos' %}">Funcionários inativos</a>
+        <a class="botao" href="{% url 'cadastrar_funcionario' %}">{% include '_icone.html' with nome='mais' tamanho=16 %} Novo funcionário</a>
+    </div>
+</div>
+
+<div class="painel">
+
+    <form method="GET" class="filtros nao-imprimir">
+        <div class="campo-busca">
+            {% include '_icone.html' with nome='busca' tamanho=16 %}
+            <input type="search" name="nome_da_pesquisa" placeholder="Pesquisar funcionário" value="{{ nome_da_pesquisa }}" aria-label="Pesquisar">
+        </div>
+        <select name="ordem" aria-label="Ordenar por" onchange="this.form.submit()">
+            <option value="crescente" {% if request.GET.ordem != 'decrescente' %}selected{% endif %}>Nome (A–Z)</option>
+            <option value="decrescente" {% if request.GET.ordem == 'decrescente' %}selected{% endif %}>Nome (Z–A)</option>
+        </select>
+        <button type="submit" class="botao">Pesquisar</button>
+    </form>
+
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th><span class="ordenar">Nome <a href="?ordem=crescente&nome_da_pesquisa={{ nome_da_pesquisa|urlencode }}" class="nao-imprimir{% if request.GET.ordem != 'decrescente' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=decrescente&nome_da_pesquisa={{ nome_da_pesquisa|urlencode }}" class="nao-imprimir{% if request.GET.ordem == 'decrescente' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th>Usuário</th>
+                    <th>E-mail</th>
+                    <th>Perfil</th>
+                    <th class="nao-imprimir">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for funcionario in funcionarios %}
+                <tr>
+                    <td class="titulo-celular forte">{{ funcionario.get_full_name|default:funcionario.username }}</td>
+                    <td data-label="Usuário">{{ funcionario.username }}</td>
+                    <td data-label="E-mail">{{ funcionario.email|default:'—' }}</td>
+                    <td data-label="Perfil">
+                        {% if funcionario.is_superuser %}
+                            <span class="etiqueta etiqueta-info">Administrador</span>
+                        {% else %}
+                            <span class="etiqueta">Funcionário</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-acoes nao-imprimir">
+                        <div class="grupo-acoes">
+                            <a class="botao-acao" href="{% url 'editar_funcionario' funcionario.id %}">Editar</a>
+                            {% if funcionario != user %}
+                            <form method="post" action="{% url 'desativar_funcionario' funcionario.id %}" class="form-acao" onsubmit="return confirm('Desativar este funcionário?')">{% csrf_token %}<button type="submit" class="botao-acao perigo">Desativar</button></form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="vazio">Nenhum funcionário encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="painel-rodape nao-imprimir">
+        <span>{{ funcionarios|length }} registro{{ funcionarios|length|pluralize }}</span>
+        <button class="botao botao-secundario botao-pequeno" onclick="window.print()">{% include '_icone.html' with nome='imprimir' tamanho=16 %} Imprimir funcionários</button>
+    </div>
+
+</div>
+
+{% endblock %}

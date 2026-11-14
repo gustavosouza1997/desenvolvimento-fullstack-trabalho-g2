@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Novo livro{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_livros' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Catálogo</a>
+        <h1>Novo livro</h1>
+        <p>Adicione uma obra ao catálogo. Todos os exemplares começam disponíveis.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Cadastrar livro</button>
+                <a class="botao botao-secundario" href="{% url 'listar_livros' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Reservas{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Reservas</h1>
+        <p>{{ reservas|length }} reserva{{ reservas|length|pluralize }} ativa{{ reservas|length|pluralize }}, atendidas por ordem de chegada.</p>
+    </div>
+    <div class="acoes nao-imprimir">
+        <a class="botao" href="{% url 'cadastrar_reserva' %}">{% include '_icone.html' with nome='mais' tamanho=16 %} Reservar livro</a>
+    </div>
+</div>
+
+<div class="painel">
+
+    <form method="GET" class="filtros nao-imprimir">
+        <div class="campo-busca">
+            {% include '_icone.html' with nome='busca' tamanho=16 %}
+            <input type="search" name="pesquisa" placeholder="Pesquisar livro ou cliente" value="{{ pesquisa }}" aria-label="Pesquisar">
+        </div>
+        <select name="ordem" aria-label="Ordenar por" onchange="this.form.submit()">
+            <option value="" {% if not ordem %}selected{% endif %}>Ordem da fila</option>
+            <option value="livro" {% if ordem == 'livro' %}selected{% endif %}>Livro (A–Z)</option>
+            <option value="-livro" {% if ordem == '-livro' %}selected{% endif %}>Livro (Z–A)</option>
+            <option value="cliente" {% if ordem == 'cliente' %}selected{% endif %}>Cliente (A–Z)</option>
+            <option value="-cliente" {% if ordem == '-cliente' %}selected{% endif %}>Cliente (Z–A)</option>
+        </select>
+        <button type="submit" class="botao">Pesquisar</button>
+    </form>
+
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th><span class="ordenar">Livro <a href="?ordem=livro&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == 'livro' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-livro&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == '-livro' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Cliente <a href="?ordem=cliente&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == 'cliente' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-cliente&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == '-cliente' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th>Telefone</th>
+                    <th>Reservado em</th>
+                    <th>Situação</th>
+                    <th class="nao-imprimir">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for reserva in reservas %}
+                <tr>
+                    <td class="titulo-celular forte">{{ reserva.livro.titulo }}</td>
+                    <td data-label="Cliente">{{ reserva.cliente.nome }}</td>
+                    <td data-label="Telefone">{{ reserva.cliente.telefone }}</td>
+                    <td data-label="Reservado em">{{ reserva.data_reserva|date:'d/m/Y' }}</td>
+                    <td data-label="Situação">
+                        {% if reserva.status == 'D' %}
+                            <span class="etiqueta etiqueta-ok">{{ reserva.get_status_display }}</span>
+                        {% else %}
+                            <span class="etiqueta etiqueta-info">{{ reserva.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-acoes nao-imprimir">
+                        <form method="post" action="{% url 'cancelar_reserva' reserva.id %}" class="form-acao" onsubmit="return confirm('Confirmar o cancelamento desta reserva?')">{% csrf_token %}<button type="submit" class="botao-acao perigo">Cancelar</button></form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="vazio">Nenhuma reserva encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="painel-rodape nao-imprimir">
+        <span>{{ reservas|length }} registro{{ reservas|length|pluralize }}</span>
+        <button class="botao botao-secundario botao-pequeno" onclick="window.print()">{% include '_icone.html' with nome='imprimir' tamanho=16 %} Imprimir reservas</button>
+    </div>
+
+</div>
+
+{% endblock %}

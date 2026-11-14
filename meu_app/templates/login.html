@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Entrar{% endblock %}
+
+{% block layout %}
+<div class="pagina-login">
+
+    <section class="login-arte">
+        <span class="marca">
+            <span class="marca-icone">{% include '_icone.html' with nome='logo' %}</span>
+            <span class="marca-nome">Biblioteca <small>Sistema de gestão</small></span>
+        </span>
+
+        <div class="login-arte-texto">
+            <h2>Acervo, empréstimos e reservas em um só lugar.</h2>
+            <p>Controle a circulação dos livros, acompanhe atrasos e avise os leitores quando a reserva estiver pronta.</p>
+        </div>
+
+        <div class="estante" aria-hidden="true">
+            <span></span><span></span><span></span><span></span><span></span>
+        </div>
+    </section>
+
+    <section class="login-formulario">
+        <div class="login-caixa">
+            <h1>Entrar</h1>
+            <p>Use seu usuário e senha de funcionário.</p>
+
+            {% include '_mensagem.html' %}
+
+            <form method="post">
+                {% csrf_token %}
+
+                {% include '_campos.html' with form=form %}
+
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <button type="submit" class="botao">Entrar</button>
+            </form>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

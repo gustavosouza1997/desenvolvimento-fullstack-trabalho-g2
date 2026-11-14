@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Novo funcionário{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_funcionarios' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Funcionários</a>
+        <h1>Novo funcionário</h1>
+        <p>Crie o acesso de um funcionário ao sistema.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Cadastrar funcionário</button>
+                <a class="botao botao-secundario" href="{% url 'listar_funcionarios' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Catálogo de livros{% endblock %}
+
+{% block head %}
+<style>
+    /* O catálogo tem muitas colunas: imprime em paisagem */
+    @page {
+        size: A4 landscape;
+        margin: 1cm;
+    }
+</style>
+{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Catálogo de livros</h1>
+        <p>{{ livros|length }} livro{{ livros|length|pluralize }} {% if pesquisa or disponiveis %}encontrado{{ livros|length|pluralize }}{% else %}no acervo{% endif %}</p>
+    </div>
+    <div class="acoes nao-imprimir">
+        <a class="botao botao-secundario" href="{% url 'livros_removidos' %}">Livros removidos</a>
+        <a class="botao" href="{% url 'cadastrar_livro' %}">{% include '_icone.html' with nome='mais' tamanho=16 %} Novo livro</a>
+    </div>
+</div>
+
+<div class="painel">
+
+    <form method="GET" class="filtros nao-imprimir">
+        <div class="campo-busca">
+            {% include '_icone.html' with nome='busca' tamanho=16 %}
+            <input type="search" name="pesquisa" placeholder="Título, autor, gênero ou ISBN" value="{{ pesquisa }}" aria-label="Pesquisar">
+        </div>
+        <select name="ordem" aria-label="Ordenar por" onchange="this.form.submit()">
+            <option value="titulo" {% if ordem == 'titulo' %}selected{% endif %}>Título (A–Z)</option>
+            <option value="-titulo" {% if ordem == '-titulo' %}selected{% endif %}>Título (Z–A)</option>
+            <option value="autor" {% if ordem == 'autor' %}selected{% endif %}>Autor (A–Z)</option>
+            <option value="-autor" {% if ordem == '-autor' %}selected{% endif %}>Autor (Z–A)</option>
+        </select>
+        <label class="opcao">
+            <input type="checkbox" name="disponiveis" value="sim" {% if disponiveis == 'sim' %}checked{% endif %} onchange="this.form.submit()">
+            Somente disponíveis
+        </label>
+        <button type="submit" class="botao">Pesquisar</button>
+    </form>
+
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th>Capa</th>
+                    <th><span class="ordenar">Título
+                        <a href="?ordem=titulo&pesquisa={{ pesquisa|urlencode }}&disponiveis={{ disponiveis }}" title="Título A–Z" class="nao-imprimir{% if ordem == 'titulo' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-titulo&pesquisa={{ pesquisa|urlencode }}&disponiveis={{ disponiveis }}" title="Título Z–A" class="nao-imprimir{% if ordem == '-titulo' %} ordem-ativa{% endif %}">↓</a>
+                    </span></th>
+                    <th><span class="ordenar">Autor
+                        <a href="?ordem=autor&pesquisa={{ pesquisa|urlencode }}&disponiveis={{ disponiveis }}" title="Autor A–Z" class="nao-imprimir{% if ordem == 'autor' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-autor&pesquisa={{ pesquisa|urlencode }}&disponiveis={{ disponiveis }}" title="Autor Z–A" class="nao-imprimir{% if ordem == '-autor' %} ordem-ativa{% endif %}">↓</a>
+                    </span></th>
+                    <th>ISBN</th>
+                    <th>Gênero</th>
+                    <th>Disponíveis</th>
+                    <th class="nao-imprimir">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for livro in livros %}
+                <tr>
+                    <td class="td-capa">
+                        {% if livro.capa %}
+                            <img class="capa" src="{{ livro.capa.url }}" alt="Capa de {{ livro.titulo }}">
+                        {% else %}
+                            <span class="capa-vazia" aria-hidden="true">{{ livro.titulo|first }}</span>
+                        {% endif %}
+                    </td>
+                    <td data-label="Título" class="titulo-celular">
+                        <span class="forte">{{ livro.titulo }}</span>
+                        <span class="secundario">{{ livro.editora }}, {{ livro.ano_publicacao }}</span>
+                    </td>
+                    <td data-label="Autor">{{ livro.autor }}</td>
+                    <td data-label="ISBN"><span class="texto-suave">{{ livro.isbn }}</span></td>
+                    <td data-label="Gênero">{{ livro.genero }}</td>
+                    <td data-label="Disponíveis">
+                        {% if livro.quantidade_disponivel > 0 %}
+                            <span class="etiqueta etiqueta-ok">{{ livro.quantidade_disponivel }} de {{ livro.quantidade_total }}</span>
+                        {% else %}
+                            <span class="etiqueta etiqueta-erro">Indisponível</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-acoes nao-imprimir">
+                        <div class="grupo-acoes">
+                            <a class="botao-acao" href="{% url 'editar_livro' livro.id %}">Editar</a>
+                            <form method="post" action="{% url 'remover_livro' livro.id %}" class="form-acao" onsubmit="return confirm('Remover este livro do catálogo?')">{% csrf_token %}<button type="submit" class="botao-acao perigo">Remover</button></form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="vazio">Nenhum livro encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="painel-rodape nao-imprimir">
+        <span>{{ livros|length }} registro{{ livros|length|pluralize }}</span>
+        <button class="botao botao-secundario botao-pequeno" onclick="window.print()">{% include '_icone.html' with nome='imprimir' tamanho=16 %} Imprimir livros</button>
+    </div>
+
+</div>
+
+{% endblock %}

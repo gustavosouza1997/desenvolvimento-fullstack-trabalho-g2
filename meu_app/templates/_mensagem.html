@@ -1,0 +1,10 @@
+{% if messages %}
+<div class="mensagens" role="status">
+    {% for mensagem in messages %}
+    <div class="alerta alerta-{{ mensagem.tags }}">
+        <span class="alerta-texto">{{ mensagem }}</span>
+        <button type="button" class="alerta-fechar" onclick="this.parentElement.remove()" aria-label="Fechar">&times;</button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}

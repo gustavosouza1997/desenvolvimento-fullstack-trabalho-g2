@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Perda ou dano{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_emprestimos' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Empréstimos</a>
+        <h1>Registrar perda ou danificação</h1>
+        <p>O exemplar será retirado do acervo.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <dl class="resumo">
+            <div><dt>Livro</dt><dd>{{ emprestimo.livro.titulo }}</dd></div>
+            <div><dt>Cliente</dt><dd>{{ emprestimo.cliente.nome }}</dd></div>
+            <div><dt>Retirado em</dt><dd>{{ emprestimo.data_retirada|date:'d/m/Y' }}</dd></div>
+        </dl>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao botao-perigo">Registrar ocorrência</button>
+                <a class="botao botao-secundario" href="{% url 'listar_emprestimos' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

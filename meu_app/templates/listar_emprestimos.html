@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Empréstimos{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Empréstimos</h1>
+        <p>{{ emprestimos|length }} empréstimo{{ emprestimos|length|pluralize }}{% if status %} com situação “{% for valor, nome in status_choices %}{% if valor == status %}{{ nome|lower }}{% endif %}{% endfor %}”{% endif %}</p>
+    </div>
+    <div class="acoes nao-imprimir">
+        <a class="botao" href="{% url 'cadastrar_emprestimo' %}">{% include '_icone.html' with nome='mais' tamanho=16 %} Registrar empréstimo</a>
+    </div>
+</div>
+
+<div class="painel">
+
+    <form method="GET" class="filtros nao-imprimir">
+        <div class="campo-busca">
+            {% include '_icone.html' with nome='busca' tamanho=16 %}
+            <input type="search" name="pesquisa" placeholder="Cliente, CPF ou livro" value="{{ pesquisa }}" aria-label="Pesquisar">
+        </div>
+        <select name="status" aria-label="Situação" onchange="this.form.submit()">
+            <option value="">Todas as situações</option>
+            {% for valor, nome in status_choices %}
+                <option value="{{ valor }}" {% if status == valor %}selected{% endif %}>{{ nome }}</option>
+            {% endfor %}
+        </select>
+        <select name="ordem" aria-label="Ordenar por" onchange="this.form.submit()">
+            <option value="prevista" {% if ordem == 'prevista' %}selected{% endif %}>Devolução mais próxima</option>
+            <option value="-prevista" {% if ordem == '-prevista' %}selected{% endif %}>Devolução mais distante</option>
+            <option value="-retirada" {% if ordem == '-retirada' %}selected{% endif %}>Retirada mais recente</option>
+            <option value="retirada" {% if ordem == 'retirada' %}selected{% endif %}>Retirada mais antiga</option>
+            <option value="livro" {% if ordem == 'livro' %}selected{% endif %}>Livro (A–Z)</option>
+            <option value="-livro" {% if ordem == '-livro' %}selected{% endif %}>Livro (Z–A)</option>
+            <option value="cliente" {% if ordem == 'cliente' %}selected{% endif %}>Cliente (A–Z)</option>
+            <option value="-cliente" {% if ordem == '-cliente' %}selected{% endif %}>Cliente (Z–A)</option>
+        </select>
+        <button type="submit" class="botao">Pesquisar</button>
+    </form>
+
+    <div class="tabela-rolagem">
+        <table class="tabela tabela-responsiva">
+            <thead>
+                <tr>
+                    <th><span class="ordenar">Livro <a href="?ordem=livro&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'livro' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-livro&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-livro' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Cliente <a href="?ordem=cliente&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'cliente' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-cliente&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-cliente' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Retirada <a href="?ordem=retirada&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'retirada' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-retirada&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-retirada' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Devolução prevista <a href="?ordem=prevista&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'prevista' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-prevista&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-prevista' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th>Devolvido em</th>
+                    <th>Situação</th>
+                    <th class="nao-imprimir">Ações</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emprestimo in emprestimos %}
+                <tr {% if emprestimo.status == 'A' and emprestimo.data_prevista_devolucao < hoje %}class="linha-alerta"{% endif %}>
+                    <td class="titulo-celular forte">{{ emprestimo.livro.titulo }}</td>
+                    <td data-label="Cliente">{{ emprestimo.cliente.nome }}</td>
+                    <td data-label="Retirada">{{ emprestimo.data_retirada|date:'d/m/Y' }}</td>
+                    <td data-label="Devolução prevista">{{ emprestimo.data_prevista_devolucao|date:'d/m/Y' }}</td>
+                    <td data-label="Devolvido em">{{ emprestimo.data_devolucao|date:'d/m/Y'|default:'—' }}</td>
+                    <td data-label="Situação">
+                        {% if emprestimo.status == 'A' and emprestimo.data_prevista_devolucao < hoje %}
+                            <span class="etiqueta etiqueta-erro">Atrasado</span>
+                        {% elif emprestimo.status == 'A' %}
+                            <span class="etiqueta etiqueta-ok">{{ emprestimo.get_status_display }}</span>
+                        {% elif emprestimo.status == 'D' %}
+                            <span class="etiqueta">{{ emprestimo.get_status_display }}</span>
+                        {% else %}
+                            <span class="etiqueta etiqueta-aviso">{{ emprestimo.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="td-acoes nao-imprimir">
+                        {% if emprestimo.status == 'A' %}
+                        <div class="grupo-acoes">
+                            <form method="post" action="{% url 'devolver_emprestimo' emprestimo.id %}" class="form-acao" onsubmit="return confirm('Confirmar a devolução deste livro?')">{% csrf_token %}<button type="submit" class="botao-acao positivo">Devolver</button></form>
+                            <a class="botao-acao" href="{% url 'renovar_emprestimo' emprestimo.id %}">Renovar</a>
+                            <a class="botao-acao perigo" href="{% url 'registrar_ocorrencia' emprestimo.id %}">Perda/Dano</a>
+                        </div>
+                        {% else %}
+                            <span class="texto-suave">{{ emprestimo.observacao|default:'—' }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="vazio">Nenhum empréstimo encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="painel-rodape nao-imprimir">
+        <span>{{ emprestimos|length }} registro{{ emprestimos|length|pluralize }}</span>
+        <button class="botao botao-secundario botao-pequeno" onclick="window.print()">{% include '_icone.html' with nome='imprimir' tamanho=16 %} Imprimir empréstimos</button>
+    </div>
+
+</div>
+
+{% endblock %}

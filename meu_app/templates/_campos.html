@@ -1,0 +1,37 @@
+{% comment %}
+    Desenha os campos de um formulário Django.
+    Uso: {% include '_campos.html' with form=formulario %}
+    Opcional: classe='grade-filtros' para trocar o layout da grade.
+{% endcomment %}
+
+{% for campo in form.hidden_fields %}{{ campo }}{% endfor %}
+
+{% if form.non_field_errors %}
+<div class="alerta alerta-error" style="margin-bottom: 1.25rem;">
+    <span class="alerta-texto">{% for erro in form.non_field_errors %}{{ erro }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</span>
+</div>
+{% endif %}
+
+<div class="{{ classe|default:'grade-campos' }}">
+    {% for campo in form.visible_fields %}
+
+        {% if campo.widget_type == 'checkbox' %}
+        <div class="campo campo-largo">
+            <div class="campo-checkbox">
+                {{ campo }}
+                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+            </div>
+            {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
+            {% for erro in campo.errors %}<small class="erro">{{ erro }}</small>{% endfor %}
+        </div>
+        {% else %}
+        <div class="campo{% if campo.errors %} campo-erro{% endif %}{% if campo.widget_type == 'textarea' or campo.widget_type == 'clearablefile' or campo.widget_type == 'file' %} campo-largo{% endif %}">
+            <label for="{{ campo.id_for_label }}">{{ campo.label }}{% if campo.field.required %}<span class="obrigatorio">*</span>{% endif %}</label>
+            {{ campo }}
+            {% if campo.help_text %}<small class="ajuda">{{ campo.help_text|safe }}</small>{% endif %}
+            {% for erro in campo.errors %}<small class="erro">{{ erro }}</small>{% endfor %}
+        </div>
+        {% endif %}
+
+    {% endfor %}
+</div>

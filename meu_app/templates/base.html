@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="{% static 'js/mascaras.js' %}" defer></script>
+    <title>{% block titulo %}Início{% endblock %} · Biblioteca</title>
+    {% block head %}{% endblock %}
+</head>
+<body>
+
+{% block layout %}
+
+    {# Checkbox que abre/fecha o menu no celular (funciona só com CSS) #}
+    <input type="checkbox" id="menu-toggle" class="menu-toggle" aria-label="Abrir menu">
+
+    {% include '_menu.html' %}
+
+    <label for="menu-toggle" class="menu-sobreposicao" aria-hidden="true"></label>
+
+    <main class="conteudo">
+
+        {% include '_mensagem.html' %}
+
+        {% block conteudo %}{% endblock %}
+
+    </main>
+
+{% endblock %}
+
+</body>
+</html>
