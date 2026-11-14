@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Cliente, Emprestimo, Livro, Reserva
+from .models import Cliente, Livro, Emprestimo, Reserva
 
 
 @admin.register(Cliente)
@@ -9,14 +9,14 @@ class ClienteAdmin(admin.ModelAdmin):
 
 @admin.register(Livro)
 class LivroAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "autor", "editora", "ano_publicacao", "quantidade_disponivel", "ativo")
+    list_display = ("titulo", "autor", "editora", "isbn", "quantidade_disponivel", "quantidade_total", "ativo")
 
 
 @admin.register(Emprestimo)
 class EmprestimoAdmin(admin.ModelAdmin):
-    list_display = ("cliente", "livro", "funcionario", "data_retirada", "status")
+    list_display = ("cliente", "livro", "data_retirada", "data_prevista_devolucao", "status")
 
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ("cliente", "livro", "funcionario", "data_reserva", "status")
+    list_display = ("cliente", "livro", "data_reserva", "status")

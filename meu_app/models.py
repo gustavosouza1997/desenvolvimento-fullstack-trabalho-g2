@@ -18,6 +18,7 @@ class Cliente(models.Model):
     def save(self, *args, **kwargs):
         self.nome = self.nome.strip().title()
         self.endereco = self.endereco.strip().title()
+        
         super().save(*args, **kwargs)
 
 
@@ -50,7 +51,7 @@ class Emprestimo(models.Model):
         ('A', 'Ativo'),
         ('D', 'Devolvido'),
         ('P', 'Perdido'),
-        ('D', 'Danificado'),
+        ('X', 'Danificado'),
     ]
 
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='emprestimos')

@@ -99,7 +99,7 @@ class Command(BaseCommand):
                 funcionario=funcionarios[(sequencia - 1) % len(funcionarios)],
                 data_retirada=hoje - timedelta(days=sequencia % 12),
                 data_prevista_devolucao=hoje + timedelta(days=14),
-                status='ATIVO',
+                status='A',
             )
             Livro.objects.filter(id=livro.id).update(quantidade_disponivel=F('quantidade_disponivel') - 1)
 
@@ -119,14 +119,14 @@ class Command(BaseCommand):
                     if not Reserva.objects.filter(
                         livro=livro,
                         cliente=cliente,
-                        status__in=['PENDENTE', 'DISPONIVEL'],
+                        status__in=['P', 'D'],
                     ).exists():
                         sequencia += 1
                         Reserva.objects.create(
                             cliente=cliente,
                             livro=livro,
                             funcionario=funcionarios[(sequencia - 1) % len(funcionarios)],
-                            status='PENDENTE',
+                            status='P',
                         )
                         reserva_criada = True
                         break

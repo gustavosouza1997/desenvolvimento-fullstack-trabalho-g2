@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Novo cliente{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_clientes' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Clientes</a>
+        <h1>Novo cliente</h1>
+        <p>Cadastre um leitor para que ele possa retirar e reservar livros.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Cadastrar cliente</button>
+                <a class="botao botao-secundario" href="{% url 'listar_clientes' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

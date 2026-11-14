@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Alterar senha{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'index' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Início</a>
+        <h1>Alterar senha</h1>
+        <p>Por segurança, informe a senha atual antes de definir a nova.</p>
+    </div>
+</div>
+
+<div class="painel form-estreito form-senha">
+    <div class="painel-corpo">
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=form classe='grade-campos uma-coluna' %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Alterar senha</button>
+                <a class="botao botao-secundario" href="{% url 'index' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}
