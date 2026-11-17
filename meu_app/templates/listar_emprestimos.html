@@ -19,7 +19,7 @@
     <form method="GET" class="filtros nao-imprimir">
         <div class="campo-busca">
             {% include '_icone.html' with nome='busca' tamanho=16 %}
-            <input type="search" name="pesquisa" placeholder="Cliente, CPF ou livro" value="{{ pesquisa }}" aria-label="Pesquisar">
+            <input type="search" name="pesquisa" placeholder="Usuário, CPF ou livro" value="{{ pesquisa }}" aria-label="Pesquisar">
         </div>
         <select name="status" aria-label="Situação" onchange="this.form.submit()">
             <option value="">Todas as situações</option>
@@ -34,8 +34,8 @@
             <option value="retirada" {% if ordem == 'retirada' %}selected{% endif %}>Retirada mais antiga</option>
             <option value="livro" {% if ordem == 'livro' %}selected{% endif %}>Livro (A–Z)</option>
             <option value="-livro" {% if ordem == '-livro' %}selected{% endif %}>Livro (Z–A)</option>
-            <option value="cliente" {% if ordem == 'cliente' %}selected{% endif %}>Cliente (A–Z)</option>
-            <option value="-cliente" {% if ordem == '-cliente' %}selected{% endif %}>Cliente (Z–A)</option>
+            <option value="usuario" {% if ordem == 'usuario' %}selected{% endif %}>Usuário (A–Z)</option>
+            <option value="-usuario" {% if ordem == '-usuario' %}selected{% endif %}>Usuário (Z–A)</option>
         </select>
         <button type="submit" class="botao">Pesquisar</button>
     </form>
@@ -45,7 +45,7 @@
             <thead>
                 <tr>
                     <th><span class="ordenar">Livro <a href="?ordem=livro&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'livro' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-livro&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-livro' %} ordem-ativa{% endif %}">↓</a></span></th>
-                    <th><span class="ordenar">Cliente <a href="?ordem=cliente&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'cliente' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-cliente&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-cliente' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Usuário <a href="?ordem=usuario&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'usuario' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-usuario&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-usuario' %} ordem-ativa{% endif %}">↓</a></span></th>
                     <th><span class="ordenar">Retirada <a href="?ordem=retirada&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'retirada' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-retirada&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-retirada' %} ordem-ativa{% endif %}">↓</a></span></th>
                     <th><span class="ordenar">Devolução prevista <a href="?ordem=prevista&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == 'prevista' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-prevista&pesquisa={{ pesquisa|urlencode }}&status={{ status }}" class="nao-imprimir{% if ordem == '-prevista' %} ordem-ativa{% endif %}">↓</a></span></th>
                     <th>Devolvido em</th>
@@ -58,7 +58,7 @@
                 {% for emprestimo in emprestimos %}
                 <tr {% if emprestimo.status == 'A' and emprestimo.data_prevista_devolucao < hoje %}class="linha-alerta"{% endif %}>
                     <td class="titulo-celular forte">{{ emprestimo.livro.titulo }}</td>
-                    <td data-label="Cliente">{{ emprestimo.cliente.nome }}</td>
+                    <td data-label="Usuário">{{ emprestimo.usuario.nome }}</td>
                     <td data-label="Retirada">{{ emprestimo.data_retirada|date:'d/m/Y' }}</td>
                     <td data-label="Devolução prevista">{{ emprestimo.data_prevista_devolucao|date:'d/m/Y' }}</td>
                     <td data-label="Devolvido em">{{ emprestimo.data_devolucao|date:'d/m/Y'|default:'—' }}</td>

@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.db.models import F
 from django.utils import timezone
-from meu_app.models import Cliente, Emprestimo, Livro, Reserva
+from meu_app.models import Usuario, Emprestimo, Livro, Reserva
 
 
 class Command(BaseCommand):
@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with transaction.atomic():
             self.criar_funcionarios()
-            self.criar_clientes()
+            self.criar_usuarios()
             self.criar_livros()
             self.criar_emprestimos()
             self.criar_reservas()
@@ -21,7 +21,7 @@ class Command(BaseCommand):
         usuario = get_user_model()
         contagens = {
             'funcionários': usuario.objects.filter(is_staff=True).count(),
-            'clientes': Cliente.objects.count(),
+            'usuarios': Usuario.objects.count(),
             'livros': Livro.objects.count(),
             'empréstimos': Emprestimo.objects.count(),
             'reservas': Reserva.objects.count(),
@@ -47,13 +47,13 @@ class Command(BaseCommand):
                 funcionario.save()
             numero += 1
 
-    def criar_clientes(self):
+    def criar_usuarios(self):
         numero = 1
-        while Cliente.objects.count() < 20:
+        while Usuario.objects.count() < 20:
             cpf = '900000000' + str(numero).zfill(2)
-            if not Cliente.objects.filter(cpf=cpf).exists():
-                Cliente.objects.create(
-                    nome='Cliente Demonstração ' + str(numero).zfill(2),
+            if not Usuario.objects.filter(cpf=cpf).exists():
+                Usuario.objects.create(
+                    nome='Usuário Demonstração ' + str(numero).zfill(2),
                     cpf=cpf,
                     telefone='1190000' + str(numero).zfill(4),
                     endereco='Rua de Demonstração, ' + str(numero),
@@ -81,7 +81,7 @@ class Command(BaseCommand):
             numero += 1
 
     def criar_emprestimos(self):
-        clientes = list(Cliente.objects.filter(ativo=True, bloqueado=False).order_by('id'))
+        usuarios = list(Usuario.objects.filter(ativo=True, bloqueado=False).order_by('id'))
         funcionarios = list(get_user_model().objects.filter(is_staff=True, is_active=True).order_by('id'))
         hoje = timezone.localdate()
         sequencia = Emprestimo.objects.count()
@@ -92,9 +92,9 @@ class Command(BaseCommand):
                 self.criar_livro(numero)
                 livro = Livro.objects.filter(ativo=True, quantidade_disponivel__gt=0).order_by('id').first()
             sequencia += 1
-            cliente = clientes[(sequencia - 1) % len(clientes)]
+            usuario = usuarios[(sequencia - 1) % len(usuarios)]
             Emprestimo.objects.create(
-                cliente=cliente,
+                usuario=usuario,
                 livro=livro,
                 funcionario=funcionarios[(sequencia - 1) % len(funcionarios)],
                 data_retirada=hoje - timedelta(days=sequencia % 12),
@@ -104,7 +104,7 @@ class Command(BaseCommand):
             Livro.objects.filter(id=livro.id).update(quantidade_disponivel=F('quantidade_disponivel') - 1)
 
     def criar_reservas(self):
-        clientes = list(Cliente.objects.filter(ativo=True, bloqueado=False).order_by('id'))
+        usuarios = list(Usuario.objects.filter(ativo=True, bloqueado=False).order_by('id'))
         funcionarios = list(get_user_model().objects.filter(is_staff=True, is_active=True).order_by('id'))
         sequencia = Reserva.objects.count()
         while Reserva.objects.count() < 20:
@@ -115,15 +115,15 @@ class Command(BaseCommand):
 
             reserva_criada = False
             for livro in livros_indisponiveis:
-                for cliente in clientes:
+                for usuario in usuarios:
                     if not Reserva.objects.filter(
                         livro=livro,
-                        cliente=cliente,
+                        usuario=usuario,
                         status__in=['P', 'D'],
                     ).exists():
                         sequencia += 1
                         Reserva.objects.create(
-                            cliente=cliente,
+                            usuario=usuario,
                             livro=livro,
                             funcionario=funcionarios[(sequencia - 1) % len(funcionarios)],
                             status='P',

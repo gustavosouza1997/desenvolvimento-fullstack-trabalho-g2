@@ -18,10 +18,10 @@
         <span class="indicador-valor">{{ total_livros }}</span>
         <span class="indicador-detalhe">Ver catálogo →</span>
     </a>
-    <a class="indicador" href="{% url 'listar_clientes' %}">
-        <span class="indicador-rotulo">Clientes</span>
-        <span class="indicador-valor">{{ total_clientes }}</span>
-        <span class="indicador-detalhe">Ver clientes →</span>
+    <a class="indicador" href="{% url 'listar_usuarios' %}">
+        <span class="indicador-rotulo">Usuários</span>
+        <span class="indicador-valor">{{ total_usuarios }}</span>
+        <span class="indicador-detalhe">Ver usuários →</span>
     </a>
     <a class="indicador" href="{% url 'listar_emprestimos' %}">
         <span class="indicador-rotulo">Empréstimos ativos</span>
@@ -38,7 +38,7 @@
 <div class="atalhos">
     <a class="atalho" href="{% url 'cadastrar_emprestimo' %}">{% include '_icone.html' with nome='emprestimo' %} Novo empréstimo</a>
     <a class="atalho" href="{% url 'cadastrar_reserva' %}">{% include '_icone.html' with nome='reserva' %} Nova reserva</a>
-    <a class="atalho" href="{% url 'cadastrar_cliente' %}">{% include '_icone.html' with nome='clientes' %} Novo cliente</a>
+    <a class="atalho" href="{% url 'cadastrar_usuario' %}">{% include '_icone.html' with nome='usuarios' %} Novo usuário</a>
     <a class="atalho" href="{% url 'cadastrar_livro' %}">{% include '_icone.html' with nome='livro' %} Novo livro</a>
 </div>
 
@@ -46,7 +46,7 @@
     <div class="painel-cabecalho">
         <div>
             <h2>Reservas prontas para retirada</h2>
-            <p>Avise estes clientes de que o livro já está separado.</p>
+            <p>Avise estes usuários de que o livro já está separado.</p>
         </div>
         <a class="botao botao-secundario botao-pequeno" href="{% url 'listar_reservas' %}">Todas as reservas</a>
     </div>
@@ -56,7 +56,7 @@
             <thead>
                 <tr>
                     <th>Livro</th>
-                    <th>Cliente</th>
+                    <th>Usuário</th>
                     <th>Telefone</th>
                     <th>Reservado em</th>
                 </tr>
@@ -65,8 +65,8 @@
                 {% for reserva in reservas_para_retirada %}
                 <tr>
                     <td class="titulo-celular forte">{{ reserva.livro.titulo }}</td>
-                    <td data-label="Cliente">{{ reserva.cliente.nome }}</td>
-                    <td data-label="Telefone">{{ reserva.cliente.telefone }}</td>
+                    <td data-label="Usuário">{{ reserva.usuario.nome }}</td>
+                    <td data-label="Telefone">{{ reserva.usuario.telefone }}</td>
                     <td data-label="Reservado em">{{ reserva.data_reserva|date:'d/m/Y' }}</td>
                 </tr>
                 {% empty %}

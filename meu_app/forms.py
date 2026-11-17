@@ -2,12 +2,12 @@ from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
-from .models import Cliente, Livro, Emprestimo, Reserva
+from .models import Usuario, Livro, Emprestimo, Reserva
 
-class ClienteForm(forms.ModelForm):
+class UsuarioForm(forms.ModelForm):
 
     class Meta:
-        model = Cliente
+        model = Usuario
         fields = [
             'nome',
             'cpf',
@@ -52,14 +52,14 @@ class ClienteForm(forms.ModelForm):
 
         cpf = f'{numeros[:3]}.{numeros[3:6]}.{numeros[6:9]}-{numeros[9:]}'
 
-        outros_clientes = Cliente.objects.filter(cpf__in=[cpf, numeros])
+        outros_usuarios = Usuario.objects.filter(cpf__in=[cpf, numeros])
         if self.instance.pk:
-            outros_clientes = outros_clientes.exclude(pk=self.instance.pk)
+            outros_usuarios = outros_usuarios.exclude(pk=self.instance.pk)
 
-        cliente_existente = outros_clientes.first()
-        if cliente_existente:
-            situacao = '' if cliente_existente.ativo else ' (inativo)'
-            raise forms.ValidationError(f'Este CPF já está cadastrado para {cliente_existente.nome}{situacao}.')
+        usuario_existente = outros_usuarios.first()
+        if usuario_existente:
+            situacao = '' if usuario_existente.ativo else ' (inativo)'
+            raise forms.ValidationError(f'Este CPF já está cadastrado para {usuario_existente.nome}{situacao}.')
 
         return cpf
 
@@ -148,7 +148,7 @@ class EmprestimoForm(forms.ModelForm):
     class Meta:
         model = Emprestimo
         fields = [
-            'cliente',
+            'usuario',
             'livro',
             'data_retirada',
             'data_prevista_devolucao',
@@ -160,7 +160,7 @@ class EmprestimoForm(forms.ModelForm):
         }
 
         widgets = {
-            'cliente': forms.Select(attrs={
+            'usuario': forms.Select(attrs={
                 'class': 'form-select'
             }),
 
@@ -182,13 +182,13 @@ class EmprestimoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['cliente'].queryset = Cliente.objects.filter(ativo=True, bloqueado=False).order_by('nome')
+        self.fields['usuario'].queryset = Usuario.objects.filter(ativo=True, bloqueado=False).order_by('nome')
         self.fields['livro'].queryset = Livro.objects.filter(ativo=True, quantidade_disponivel__gt=0).order_by('titulo')
 
     def clean(self):
         dados = super().clean()
 
-        cliente = dados.get('cliente')
+        usuario = dados.get('usuario')
         livro = dados.get('livro')
         data_retirada = dados.get('data_retirada')
         data_prevista = dados.get('data_prevista_devolucao')
@@ -196,11 +196,11 @@ class EmprestimoForm(forms.ModelForm):
         if data_retirada and data_prevista and data_prevista <= data_retirada:
             self.add_error('data_prevista_devolucao', 'A devolução deve ser depois da data de retirada.')
 
-        if cliente and livro:
+        if usuario and livro:
             reserva = Reserva.objects.filter(livro=livro, status='D').order_by('data_reserva', 'id').first()
 
-            if reserva and reserva.cliente != cliente:
-                self.add_error('livro', f'Este livro está reservado para {reserva.cliente.nome}.')
+            if reserva and reserva.usuario != usuario:
+                self.add_error('livro', f'Este livro está reservado para {reserva.usuario.nome}.')
 
         return dados
 
@@ -210,12 +210,12 @@ class ReservaForm(forms.ModelForm):
     class Meta:
         model = Reserva
         fields = [
-            'cliente',
+            'usuario',
             'livro',
         ]
 
         widgets = {
-            'cliente': forms.Select(attrs={
+            'usuario': forms.Select(attrs={
                 'class': 'form-select'
             }),
 
@@ -227,24 +227,24 @@ class ReservaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.fields['cliente'].queryset = Cliente.objects.filter(ativo=True, bloqueado=False).order_by('nome')
+        self.fields['usuario'].queryset = Usuario.objects.filter(ativo=True, bloqueado=False).order_by('nome')
         self.fields['livro'].queryset = Livro.objects.filter(ativo=True, quantidade_disponivel=0).order_by('titulo')
 
     def clean(self):
         dados = super().clean()
 
-        cliente = dados.get('cliente')
+        usuario = dados.get('usuario')
         livro = dados.get('livro')
 
-        if cliente and livro:
+        if usuario and livro:
             ja_reservado = Reserva.objects.filter(
-                cliente=cliente,
+                usuario=usuario,
                 livro=livro,
                 status__in=['P', 'D'],
             ).exists()
 
             if ja_reservado:
-                self.add_error('livro', 'Este cliente já possui uma reserva ativa para este livro.')
+                self.add_error('livro', 'Este usuário já possui uma reserva ativa para este livro.')
 
         return dados
 
@@ -299,8 +299,8 @@ class OcorrenciaForm(forms.Form):
         })
     )
 
-    bloquear_cliente = forms.BooleanField(
-        label='Bloquear cliente até a regularização',
+    bloquear_usuario = forms.BooleanField(
+        label='Bloquear usuário até a regularização',
         required=False,
         initial=True
     )
@@ -332,7 +332,7 @@ class EditarFuncionarioForm(forms.ModelForm):
 
 TIPO_RELATORIO_CHOICES = [
     ('livros', 'Livros mais emprestados'),
-    ('clientes', 'Clientes com mais empréstimos'),
+    ('usuarios', 'Usuários com mais empréstimos'),
     ('emprestimos', 'Todos os empréstimos do período'),
 ]
 

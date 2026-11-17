@@ -19,14 +19,14 @@
     <form method="GET" class="filtros nao-imprimir">
         <div class="campo-busca">
             {% include '_icone.html' with nome='busca' tamanho=16 %}
-            <input type="search" name="pesquisa" placeholder="Pesquisar livro ou cliente" value="{{ pesquisa }}" aria-label="Pesquisar">
+            <input type="search" name="pesquisa" placeholder="Pesquisar livro ou usuário" value="{{ pesquisa }}" aria-label="Pesquisar">
         </div>
         <select name="ordem" aria-label="Ordenar por" onchange="this.form.submit()">
             <option value="" {% if not ordem %}selected{% endif %}>Ordem da fila</option>
             <option value="livro" {% if ordem == 'livro' %}selected{% endif %}>Livro (A–Z)</option>
             <option value="-livro" {% if ordem == '-livro' %}selected{% endif %}>Livro (Z–A)</option>
-            <option value="cliente" {% if ordem == 'cliente' %}selected{% endif %}>Cliente (A–Z)</option>
-            <option value="-cliente" {% if ordem == '-cliente' %}selected{% endif %}>Cliente (Z–A)</option>
+            <option value="usuario" {% if ordem == 'usuario' %}selected{% endif %}>Usuário (A–Z)</option>
+            <option value="-usuario" {% if ordem == '-usuario' %}selected{% endif %}>Usuário (Z–A)</option>
         </select>
         <button type="submit" class="botao">Pesquisar</button>
     </form>
@@ -36,7 +36,7 @@
             <thead>
                 <tr>
                     <th><span class="ordenar">Livro <a href="?ordem=livro&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == 'livro' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-livro&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == '-livro' %} ordem-ativa{% endif %}">↓</a></span></th>
-                    <th><span class="ordenar">Cliente <a href="?ordem=cliente&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == 'cliente' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-cliente&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == '-cliente' %} ordem-ativa{% endif %}">↓</a></span></th>
+                    <th><span class="ordenar">Usuário <a href="?ordem=usuario&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == 'usuario' %} ordem-ativa{% endif %}">↑</a><a href="?ordem=-usuario&pesquisa={{ pesquisa|urlencode }}" class="nao-imprimir{% if ordem == '-usuario' %} ordem-ativa{% endif %}">↓</a></span></th>
                     <th>Telefone</th>
                     <th>Reservado em</th>
                     <th>Situação</th>
@@ -48,8 +48,8 @@
                 {% for reserva in reservas %}
                 <tr>
                     <td class="titulo-celular forte">{{ reserva.livro.titulo }}</td>
-                    <td data-label="Cliente">{{ reserva.cliente.nome }}</td>
-                    <td data-label="Telefone">{{ reserva.cliente.telefone }}</td>
+                    <td data-label="Usuário">{{ reserva.usuario.nome }}</td>
+                    <td data-label="Telefone">{{ reserva.usuario.telefone }}</td>
                     <td data-label="Reservado em">{{ reserva.data_reserva|date:'d/m/Y' }}</td>
                     <td data-label="Situação">
                         {% if reserva.status == 'D' %}

@@ -5,7 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.utils import timezone
 
-from meu_app.models import Cliente, Emprestimo, Livro, Reserva
+from meu_app.models import Usuario, Emprestimo, Livro, Reserva
 
 
 SENHA_FUNCIONARIOS = 'Biblioteca@2026'
@@ -102,7 +102,7 @@ LIVROS = [
 ]
 
 # (apelido, nome, base do CPF, telefone, endereço, ativo, bloqueado)
-CLIENTES = [
+USUARIOS = [
     ('ana', 'Ana Beatriz Moreira', '483915026', '(51) 99634-1187', 'Rua Tristão Monteiro, 1250 - Centro, Taquara/RS', True, False),
     ('rafael', 'Rafael Lindemann', '701264839', '(51) 98417-5520', 'Avenida Sebastião Amoretti, 3420 - Parobé/RS', True, False),
     ('juliana', 'Juliana Kessler Prado', '362890174', '(51) 99288-4361', 'Rua Júlio de Castilhos, 877 - Centro, Taquara/RS', True, False),
@@ -115,7 +115,7 @@ CLIENTES = [
     ('marcelo', 'Marcelo Azambuja', '076152948', '(51) 98276-3309', 'Rua Rio Branco, 588 - Santa Teresinha, Taquara/RS', True, True),
 ]
 
-# (cliente, isbn do livro, dias retirada, dias prevista, dias devolução, status, funcionário, observação)
+# (usuario, isbn do livro, dias retirada, dias prevista, dias devolução, status, funcionário, observação)
 # Os dias são relativos a hoje (negativo = passado).
 EMPRESTIMOS = [
     # Histórico de devolvidos (alimenta os relatórios)
@@ -139,7 +139,7 @@ EMPRESTIMOS = [
 
     # Ocorrências (perdido e danificado)
     ('marcelo', '9788573264463', -45, -31, None, 'P', 'joao.vargas',
-     'Cliente informou que esqueceu o livro em um ônibus intermunicipal. Bloqueado até repor o exemplar.'),
+     'Usuário informou que esqueceu o livro em um ônibus intermunicipal. Bloqueado até repor o exemplar.'),
     ('camila', '9788522008735', -60, -46, None, 'X', 'mariana.lopes',
      'Devolvido com várias páginas rasgadas e mancha de café na capa. Exemplar retirado do acervo.'),
 
@@ -158,7 +158,7 @@ EMPRESTIMOS = [
     ('lucas', '9788595084742', -20, -6, None, 'A', 'joao.vargas', ''),
 ]
 
-# (cliente, isbn do livro, dias da reserva, status, funcionário)
+# (usuario, isbn do livro, dias da reserva, status, funcionário)
 RESERVAS = [
     # Fila de espera para Grande Sertão (impede a renovação do Rafael)
     ('ana', '9788535932171', -10, 'P', 'mariana.lopes'),
@@ -186,13 +186,13 @@ def gerar_cpf(base):
 
 
 class Command(BaseCommand):
-    help = 'Popula o banco com livros reais (incluindo séries de fantasia), 10 clientes e cenários de empréstimos e reservas.'
+    help = 'Popula o banco com livros reais (incluindo séries de fantasia), 10 usuários e cenários de empréstimos e reservas.'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--limpar',
             action='store_true',
-            help='Apaga clientes, livros, empréstimos, reservas e os funcionários de exemplo antes de popular.',
+            help='Apaga usuários, livros, empréstimos, reservas e os funcionários de exemplo antes de popular.',
         )
 
     def handle(self, *args, **options):
@@ -203,19 +203,19 @@ class Command(BaseCommand):
                 Reserva.objects.all().delete()
                 Emprestimo.objects.all().delete()
                 Livro.objects.all().delete()
-                Cliente.objects.all().delete()
+                Usuario.objects.all().delete()
                 usuario.objects.filter(username__in=[f[0] for f in FUNCIONARIOS]).delete()
-            elif Livro.objects.exists() or Cliente.objects.exists():
-                raise CommandError('O banco já possui livros ou clientes. Use --limpar para recriar os dados.')
+            elif Livro.objects.exists() or Usuario.objects.exists():
+                raise CommandError('O banco já possui livros ou usuários. Use --limpar para recriar os dados.')
 
             hoje = timezone.localdate()
             funcionarios = self.criar_funcionarios(usuario)
             livros = self.criar_livros()
-            clientes = self.criar_clientes()
+            usuarios = self.criar_usuarios()
 
             for apelido, isbn, ret, prev, dev, status, func, obs in EMPRESTIMOS:
                 Emprestimo.objects.create(
-                    cliente=clientes[apelido],
+                    usuario=usuarios[apelido],
                     livro=livros[isbn],
                     funcionario=funcionarios[func],
                     data_retirada=hoje + timedelta(days=ret),
@@ -227,7 +227,7 @@ class Command(BaseCommand):
 
             for apelido, isbn, dias, status, func in RESERVAS:
                 Reserva.objects.create(
-                    cliente=clientes[apelido],
+                    usuario=usuarios[apelido],
                     livro=livros[isbn],
                     funcionario=funcionarios[func],
                     data_reserva=hoje + timedelta(days=dias),
@@ -242,7 +242,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f'Banco populado: {usuario.objects.filter(is_staff=True).count()} funcionários, '
-            f'{Cliente.objects.count()} clientes, {Livro.objects.count()} livros, '
+            f'{Usuario.objects.count()} usuários, {Livro.objects.count()} livros, '
             f'{Emprestimo.objects.count()} empréstimos, {Reserva.objects.count()} reservas.'
         ))
         self.stdout.write(f'Senha dos funcionários de exemplo: {SENHA_FUNCIONARIOS}')
@@ -278,10 +278,10 @@ class Command(BaseCommand):
             )
         return livros
 
-    def criar_clientes(self):
-        clientes = {}
-        for apelido, nome, base_cpf, telefone, endereco, ativo, bloqueado in CLIENTES:
-            clientes[apelido] = Cliente.objects.create(
+    def criar_usuarios(self):
+        usuarios = {}
+        for apelido, nome, base_cpf, telefone, endereco, ativo, bloqueado in USUARIOS:
+            usuarios[apelido] = Usuario.objects.create(
                 nome=nome,
                 cpf=gerar_cpf(base_cpf),
                 telefone=telefone,
@@ -289,4 +289,4 @@ class Command(BaseCommand):
                 ativo=ativo,
                 bloqueado=bloqueado,
             )
-        return clientes
+        return usuarios

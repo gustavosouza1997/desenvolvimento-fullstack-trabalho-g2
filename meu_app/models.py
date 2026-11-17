@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import timezone
 
 
-class Cliente(models.Model):
+class Usuario(models.Model):
     nome = models.CharField(max_length=150)
     cpf = models.CharField(max_length=14, unique=True)
     telefone = models.CharField(max_length=20)
@@ -54,7 +54,7 @@ class Emprestimo(models.Model):
         ('X', 'Danificado'),
     ]
 
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='emprestimos')
+    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='emprestimos')
     livro = models.ForeignKey(Livro, on_delete=models.PROTECT, related_name='emprestimos')
     funcionario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     data_retirada = models.DateField(default=timezone.localdate)
@@ -64,7 +64,7 @@ class Emprestimo(models.Model):
     observacao = models.TextField(blank=True)
 
     def __str__(self):
-        return f'{self.livro.titulo} - {self.cliente.nome}'
+        return f'{self.livro.titulo} - {self.usuario.nome}'
 
 
 class Reserva(models.Model):
@@ -75,12 +75,12 @@ class Reserva(models.Model):
         ('C', 'Cancelada'),
     ]
 
-    cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT, related_name='reservas')
+    usuario = models.ForeignKey(Usuario, on_delete=models.PROTECT, related_name='reservas')
     livro = models.ForeignKey(Livro, on_delete=models.PROTECT, related_name='reservas')
     funcionario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     data_reserva = models.DateField(default=timezone.localdate)
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
 
     def __str__(self):
-        return f'{self.livro.titulo} - {self.cliente.nome}'
+        return f'{self.livro.titulo} - {self.usuario.nome}'
 

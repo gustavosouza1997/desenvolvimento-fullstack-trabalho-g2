@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block titulo %}Editar usuário{% endblock %}
+
+{% block conteudo %}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a class="link-voltar" href="{% url 'listar_usuarios' %}">{% include '_icone.html' with nome='voltar' tamanho=16 %} Usuários</a>
+        <h1>Editar usuário</h1>
+        <p>{{ usuario.nome }}</p>
+    </div>
+</div>
+
+<div class="painel form-estreito">
+    <div class="painel-corpo">
+
+        <dl class="resumo">
+            <div><dt>Empréstimos no histórico</dt><dd>{{ usuario.emprestimos.count }}</dd></div>
+            <div><dt>Situação</dt><dd>{% if not usuario.ativo %}<span class="etiqueta">Inativo</span>{% elif usuario.bloqueado %}<span class="etiqueta etiqueta-erro">Bloqueado</span>{% else %}<span class="etiqueta etiqueta-ok">Liberado</span>{% endif %}</dd></div>
+        </dl>
+
+        <form method="post">
+            {% csrf_token %}
+
+            {% include '_campos.html' with form=formulario %}
+
+            <div class="form-botoes">
+                <button type="submit" class="botao">Salvar alterações</button>
+                <a class="botao botao-secundario" href="{% url 'listar_usuarios' %}">Cancelar</a>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+{% if usuario.ativo %}
+<div class="painel form-estreito zona-perigo">
+    <div class="painel-corpo">
+        <div>
+            <h2>Desativar usuário</h2>
+            <p>O usuário sai da lista e não pode mais retirar nem reservar livros. O histórico é mantido e ele pode ser ativado de novo em <a href="{% url 'usuarios_inativos' %}">Usuários inativos</a>.</p>
+        </div>
+        <form method="post" action="{% url 'desativar_usuario' usuario.id %}" class="form-acao" onsubmit="return confirm('Desativar o usuário {{ usuario.nome|escapejs }}?')">
+            {% csrf_token %}
+            <button type="submit" class="botao botao-perigo">Desativar usuário</button>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

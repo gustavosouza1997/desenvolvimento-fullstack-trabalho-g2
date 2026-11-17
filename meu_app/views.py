@@ -10,9 +10,9 @@ from django.db.models import Q, Count
 from django.db.models.functions import Lower
 from django.utils import timezone
 
-from .models import Cliente, Livro, Emprestimo, Reserva
+from .models import Usuario, Livro, Emprestimo, Reserva
 from .forms import (
-    ClienteForm,
+    UsuarioForm,
     LivroForm,
     EmprestimoForm,
     ReservaForm,
@@ -29,13 +29,13 @@ def index(request):
 
     dados = {
         'total_livros': Livro.objects.filter(ativo=True).count(),
-        'total_clientes': Cliente.objects.filter(ativo=True).count(),
+        'total_usuarios': Usuario.objects.filter(ativo=True).count(),
         'emprestimos_ativos': Emprestimo.objects.filter(status='A').count(),
         'emprestimos_atrasados': Emprestimo.objects.filter(
             status='A',
             data_prevista_devolucao__lt=timezone.localdate()
         ).count(),
-        'reservas_para_retirada': Reserva.objects.filter(status='D').select_related('cliente', 'livro'),
+        'reservas_para_retirada': Reserva.objects.filter(status='D').select_related('usuario', 'livro'),
     }
 
     return render(request, 'index.html', dados)
@@ -215,145 +215,145 @@ def ativar_funcionario(request, id):
 
 
 @login_required
-def listar_clientes(request):
+def listar_usuarios(request):
 
     ordem = request.GET.get('ordem')
     nome_da_pesquisa = request.GET.get('nome_da_pesquisa', '')
 
-    clientes = Cliente.objects.filter(
+    usuarios = Usuario.objects.filter(
         Q(nome__icontains=nome_da_pesquisa) | Q(
             cpf__icontains=nome_da_pesquisa),
         ativo=True,
     ).order_by(Lower('nome'))
 
     if ordem == 'decrescente':
-        clientes = clientes.order_by(Lower('nome').desc())
+        usuarios = usuarios.order_by(Lower('nome').desc())
 
     dados = {
-        'clientes': clientes,
+        'usuarios': usuarios,
         'nome_da_pesquisa': nome_da_pesquisa,
     }
 
-    return render(request, 'listar_clientes.html', dados)
+    return render(request, 'listar_usuarios.html', dados)
 
 
 @login_required
-def cadastrar_cliente(request):
+def cadastrar_usuario(request):
 
     if request.method == 'POST':
-        form = ClienteForm(request.POST)
+        form = UsuarioForm(request.POST)
 
         if form.is_valid():
             form.save()
             nome = form.cleaned_data['nome']
 
-            mensagem_confirmacao = f'Cliente {nome} cadastrado com sucesso!'
+            mensagem_confirmacao = f'Usuário {nome} cadastrado com sucesso!'
             messages.success(request, mensagem_confirmacao)
 
-            return redirect('listar_clientes')
+            return redirect('listar_usuarios')
     else:
-        form = ClienteForm()
+        form = UsuarioForm()
 
     dados = {
         'formulario': form
     }
 
-    return render(request, 'cadastrar_cliente.html', dados)
+    return render(request, 'cadastrar_usuario.html', dados)
 
 
 @login_required
-def editar_cliente(request, id):
+def editar_usuario(request, id):
 
-    cliente = Cliente.objects.get(id=id)
+    usuario = Usuario.objects.get(id=id)
 
-    form = ClienteForm(instance=cliente)
+    form = UsuarioForm(instance=usuario)
 
     if request.method == 'POST':
 
-        form = ClienteForm(request.POST, instance=cliente)
+        form = UsuarioForm(request.POST, instance=usuario)
 
         if form.is_valid():
             form.save()
             nome = form.cleaned_data['nome']
 
-            mensagem_confirmacao = f'Cliente {nome} alterado com sucesso!'
+            mensagem_confirmacao = f'Usuário {nome} alterado com sucesso!'
             messages.success(request, mensagem_confirmacao)
 
-            return redirect('listar_clientes')
+            return redirect('listar_usuarios')
 
     dados = {
         'formulario': form,
-        'cliente': cliente,
+        'usuario': usuario,
     }
 
-    return render(request, 'editar_cliente.html', dados)
+    return render(request, 'editar_usuario.html', dados)
 
 
 @login_required
-def desativar_cliente(request, id):
+def desativar_usuario(request, id):
 
-    cliente = Cliente.objects.get(id=id)
+    usuario = Usuario.objects.get(id=id)
 
     if request.method == 'POST':
         # Não pode desativar quem ainda está com livro ou na fila de reservas
-        emprestimos_ativos = cliente.emprestimos.filter(status='A').count()
-        reservas_ativas = cliente.reservas.filter(status__in=['P', 'D']).count()
+        emprestimos_ativos = usuario.emprestimos.filter(status='A').count()
+        reservas_ativas = usuario.reservas.filter(status__in=['P', 'D']).count()
 
         if emprestimos_ativos:
-            messages.error(request, f'{cliente.nome} ainda tem {emprestimos_ativos} empréstimo(s) ativo(s). Registre a devolução antes de desativar.')
-            return redirect('editar_cliente', id=cliente.id)
+            messages.error(request, f'{usuario.nome} ainda tem {emprestimos_ativos} empréstimo(s) ativo(s). Registre a devolução antes de desativar.')
+            return redirect('editar_usuario', id=usuario.id)
 
         if reservas_ativas:
-            messages.error(request, f'{cliente.nome} tem {reservas_ativas} reserva(s) ativa(s). Cancele as reservas antes de desativar.')
-            return redirect('editar_cliente', id=cliente.id)
+            messages.error(request, f'{usuario.nome} tem {reservas_ativas} reserva(s) ativa(s). Cancele as reservas antes de desativar.')
+            return redirect('editar_usuario', id=usuario.id)
 
-        cliente.ativo = False
-        cliente.save()
+        usuario.ativo = False
+        usuario.save()
 
-        messages.success(request, f'Cliente {cliente.nome} desativado com sucesso')
+        messages.success(request, f'Usuário {usuario.nome} desativado com sucesso')
 
-    return redirect('listar_clientes')
+    return redirect('listar_usuarios')
 
 
 @login_required
-def clientes_inativos(request):
+def usuarios_inativos(request):
 
-    clientes = Cliente.objects.filter(ativo=False).order_by(Lower('nome'))
+    usuarios = Usuario.objects.filter(ativo=False).order_by(Lower('nome'))
 
     dados = {
-        'clientes': clientes
+        'usuarios': usuarios
     }
 
-    return render(request, 'clientes_inativos.html', dados)
+    return render(request, 'usuarios_inativos.html', dados)
 
 
 @login_required
-def ativar_cliente(request, id):
+def ativar_usuario(request, id):
 
-    cliente = Cliente.objects.get(id=id)
+    usuario = Usuario.objects.get(id=id)
 
     if request.method == 'POST':
-        cliente.ativo = True
-        cliente.save()
+        usuario.ativo = True
+        usuario.save()
 
-        messages.success(request, f'Cliente {cliente.nome} ativado com sucesso')
+        messages.success(request, f'Usuário {usuario.nome} ativado com sucesso')
 
-    return redirect('clientes_inativos')
+    return redirect('usuarios_inativos')
 
 
 @login_required
-def desbloquear_cliente(request, id):
+def desbloquear_usuario(request, id):
 
-    cliente = Cliente.objects.get(id=id)
+    usuario = Usuario.objects.get(id=id)
 
     if request.method == 'POST':
-        cliente.bloqueado = False
-        cliente.save()
+        usuario.bloqueado = False
+        usuario.save()
 
-        mensagem = f'Cliente {cliente.nome} desbloqueado com sucesso'
+        mensagem = f'Usuário {usuario.nome} desbloqueado com sucesso'
         messages.success(request, mensagem)
 
-    return redirect('listar_clientes')
+    return redirect('listar_usuarios')
 
 
 @login_required
@@ -508,7 +508,7 @@ def listar_emprestimos(request):
 
     ordenacoes = {
         'livro': 'livro__titulo',
-        'cliente': 'cliente__nome',
+        'usuario': 'usuario__nome',
         'retirada': 'data_retirada',
         'prevista': 'data_prevista_devolucao',
     }
@@ -521,10 +521,10 @@ def listar_emprestimos(request):
         campo = '-' + campo
 
     emprestimos = Emprestimo.objects.filter(
-        Q(cliente__nome__icontains=pesquisa) |
-        Q(cliente__cpf__icontains=pesquisa) |
+        Q(usuario__nome__icontains=pesquisa) |
+        Q(usuario__cpf__icontains=pesquisa) |
         Q(livro__titulo__icontains=pesquisa)
-    ).select_related('cliente', 'livro', 'funcionario').order_by(campo, 'id')
+    ).select_related('usuario', 'livro', 'funcionario').order_by(campo, 'id')
 
     if status:
         emprestimos = emprestimos.filter(status=status)
@@ -557,12 +557,12 @@ def cadastrar_emprestimo(request):
             livro.save()
 
             Reserva.objects.filter(
-                cliente=emprestimo.cliente,
+                usuario=emprestimo.usuario,
                 livro=livro,
                 status__in=['P', 'D'],
             ).update(status='A')
 
-            mensagem_confirmacao = f'Empréstimo do livro {livro.titulo} para {emprestimo.cliente.nome} registrado com sucesso!'
+            mensagem_confirmacao = f'Empréstimo do livro {livro.titulo} para {emprestimo.usuario.nome} registrado com sucesso!'
             messages.success(request, mensagem_confirmacao)
 
             return redirect('listar_emprestimos')
@@ -605,7 +605,7 @@ def devolver_emprestimo(request, id):
             reserva.status = 'D'
             reserva.save()
 
-            aviso = f'Avisar {reserva.cliente.nome} (telefone {reserva.cliente.telefone}): o livro {livro.titulo} reservado já está disponível para retirada'
+            aviso = f'Avisar {reserva.usuario.nome} (telefone {reserva.usuario.telefone}): o livro {livro.titulo} reservado já está disponível para retirada'
             messages.success(request, aviso)
 
     return redirect('listar_emprestimos')
@@ -619,10 +619,10 @@ def renovar_emprestimo(request, id):
     reservado = Reserva.objects.filter(
         livro=emprestimo.livro,
         status__in=['P', 'D'],
-    ).exclude(cliente=emprestimo.cliente).exists()
+    ).exclude(usuario=emprestimo.usuario).exists()
 
     if reservado:
-        mensagem = f'O livro {emprestimo.livro.titulo} está reservado para outro cliente e não pode ser renovado'
+        mensagem = f'O livro {emprestimo.livro.titulo} está reservado para outro usuário e não pode ser renovado'
         messages.error(request, mensagem)
         return redirect('listar_emprestimos')
 
@@ -669,11 +669,11 @@ def registrar_ocorrencia(request, id):
 
             mensagem_confirmacao = f'Ocorrência registrada para o livro {livro.titulo}'
 
-            if form.cleaned_data['bloquear_cliente']:
-                cliente = emprestimo.cliente
-                cliente.bloqueado = True
-                cliente.save()
-                mensagem_confirmacao += f' e cliente {cliente.nome} bloqueado até a regularização'
+            if form.cleaned_data['bloquear_usuario']:
+                usuario = emprestimo.usuario
+                usuario.bloqueado = True
+                usuario.save()
+                mensagem_confirmacao += f' e usuário {usuario.nome} bloqueado até a regularização'
 
             messages.success(request, mensagem_confirmacao)
 
@@ -697,13 +697,13 @@ def listar_reservas(request):
 
     reservas = Reserva.objects.filter(
         Q(livro__titulo__icontains=pesquisa) | Q(
-            cliente__nome__icontains=pesquisa),
+            usuario__nome__icontains=pesquisa),
         status__in=['P', 'D'],
-    ).select_related('cliente', 'livro')
+    ).select_related('usuario', 'livro')
 
     ordenacoes = {
         'livro': 'livro__titulo',
-        'cliente': 'cliente__nome',
+        'usuario': 'usuario__nome',
     }
 
     campo = ordenacoes.get(ordem.lstrip('-'))
@@ -734,7 +734,7 @@ def cadastrar_reserva(request):
             reserva.funcionario = request.user
             reserva.save()
 
-            mensagem_confirmacao = f'Reserva do livro {reserva.livro.titulo} para {reserva.cliente.nome} registrada com sucesso!'
+            mensagem_confirmacao = f'Reserva do livro {reserva.livro.titulo} para {reserva.usuario.nome} registrada com sucesso!'
             messages.success(request, mensagem_confirmacao)
 
             return redirect('listar_reservas')
@@ -759,7 +759,7 @@ def cancelar_reserva(request, id):
         reserva.status = 'C'
         reserva.save()
 
-        mensagem = f'Reserva do livro {reserva.livro.titulo} para {reserva.cliente.nome} cancelada com sucesso'
+        mensagem = f'Reserva do livro {reserva.livro.titulo} para {reserva.usuario.nome} cancelada com sucesso'
         messages.success(request, mensagem)
 
         if estava_disponivel:
@@ -772,7 +772,7 @@ def cancelar_reserva(request, id):
                 proxima.status = 'D'
                 proxima.save()
 
-                aviso = f'Avisar {proxima.cliente.nome} (telefone {proxima.cliente.telefone}): o livro {proxima.livro.titulo} já está disponível para retirada'
+                aviso = f'Avisar {proxima.usuario.nome} (telefone {proxima.usuario.telefone}): o livro {proxima.livro.titulo} já está disponível para retirada'
                 messages.success(request, aviso)
 
     return redirect('listar_reservas')
@@ -807,18 +807,18 @@ def relatorios(request):
         'livro__autor',
     ).annotate(total=Count('id')).order_by('-total', 'livro__titulo')
 
-    clientes_mais_emprestimos = emprestimos.values(
-        'cliente__nome',
-        'cliente__cpf',
-    ).annotate(total=Count('id')).order_by('-total', 'cliente__nome')
+    usuarios_mais_emprestimos = emprestimos.values(
+        'usuario__nome',
+        'usuario__cpf',
+    ).annotate(total=Count('id')).order_by('-total', 'usuario__nome')
 
     dados = {
         'form': form,
         'tipo': tipo,
         'total_emprestimos': emprestimos.count(),
         'livros_mais_emprestados': livros_mais_emprestados,
-        'clientes_mais_emprestimos': clientes_mais_emprestimos,
-        'emprestimos': emprestimos.select_related('cliente', 'livro').order_by('-data_retirada'),
+        'usuarios_mais_emprestimos': usuarios_mais_emprestimos,
+        'emprestimos': emprestimos.select_related('usuario', 'livro').order_by('-data_retirada'),
     }
 
     return render(request, 'relatorios.html', dados)

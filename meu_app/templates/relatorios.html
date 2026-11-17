@@ -65,25 +65,25 @@
     </div>
     {% endif %}
 
-    {% if tipo == 'clientes' %}
-    <div class="painel-cabecalho"><h2>Clientes com mais empréstimos</h2></div>
+    {% if tipo == 'usuarios' %}
+    <div class="painel-cabecalho"><h2>Usuários com mais empréstimos</h2></div>
     <div class="tabela-rolagem">
         <table class="tabela tabela-responsiva">
             <thead>
                 <tr>
                     <th>Posição</th>
-                    <th>Cliente</th>
+                    <th>Usuário</th>
                     <th>CPF</th>
                     <th class="numero">Empréstimos</th>
                 </tr>
             </thead>
             <tbody>
-                {% with maior=clientes_mais_emprestimos.0.total %}
-                {% for item in clientes_mais_emprestimos %}
+                {% with maior=usuarios_mais_emprestimos.0.total %}
+                {% for item in usuarios_mais_emprestimos %}
                 <tr>
                     <td data-label="Posição"><span class="posicao posicao-{{ forloop.counter }}">{{ forloop.counter }}º</span></td>
-                    <td data-label="Cliente" class="forte">{{ item.cliente__nome }}</td>
-                    <td data-label="CPF">{{ item.cliente__cpf }}</td>
+                    <td data-label="Usuário" class="forte">{{ item.usuario__nome }}</td>
+                    <td data-label="CPF">{{ item.usuario__cpf }}</td>
                     <td data-label="Empréstimos" class="numero">
                         {{ item.total }}
                         <span class="barra-progresso nao-imprimir"><span style="width: {% widthratio item.total maior 100 %}%"></span></span>
@@ -106,7 +106,7 @@
                 <tr>
                     <th>Retirada</th>
                     <th>Livro</th>
-                    <th>Cliente</th>
+                    <th>Usuário</th>
                     <th>Devolução prevista</th>
                     <th>Situação</th>
                 </tr>
@@ -116,7 +116,7 @@
                 <tr>
                     <td data-label="Retirada">{{ emprestimo.data_retirada|date:'d/m/Y' }}</td>
                     <td data-label="Livro" class="forte">{{ emprestimo.livro.titulo }}</td>
-                    <td data-label="Cliente">{{ emprestimo.cliente.nome }}</td>
+                    <td data-label="Usuário">{{ emprestimo.usuario.nome }}</td>
                     <td data-label="Devolução prevista">{{ emprestimo.data_prevista_devolucao|date:'d/m/Y' }}</td>
                     <td data-label="Situação">
                         {% if emprestimo.status == 'A' %}

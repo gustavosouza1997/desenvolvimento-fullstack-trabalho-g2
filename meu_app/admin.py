@@ -1,9 +1,9 @@
 from django.contrib import admin
-from .models import Cliente, Livro, Emprestimo, Reserva
+from .models import Usuario, Livro, Emprestimo, Reserva
 
 
-@admin.register(Cliente)
-class ClienteAdmin(admin.ModelAdmin):
+@admin.register(Usuario)
+class UsuarioAdmin(admin.ModelAdmin):
     list_display = ("nome", "cpf", "telefone", "ativo", "bloqueado")
 
 
@@ -14,9 +14,9 @@ class LivroAdmin(admin.ModelAdmin):
 
 @admin.register(Emprestimo)
 class EmprestimoAdmin(admin.ModelAdmin):
-    list_display = ("cliente", "livro", "data_retirada", "data_prevista_devolucao", "status")
+    list_display = ("usuario", "livro", "data_retirada", "data_prevista_devolucao", "status")
 
 
 @admin.register(Reserva)
 class ReservaAdmin(admin.ModelAdmin):
-    list_display = ("cliente", "livro", "data_reserva", "status")
+    list_display = ("usuario", "livro", "data_reserva", "status")

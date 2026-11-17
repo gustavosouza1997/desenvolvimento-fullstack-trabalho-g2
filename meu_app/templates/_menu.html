@@ -48,8 +48,8 @@
 
         <div class="menu-grupo">
             <span class="menu-grupo-titulo">Pessoas</span>
-            <a class="menu-link {% if 'cliente' in rota %}ativo{% endif %}" href="{% url 'listar_clientes' %}">
-                {% include '_icone.html' with nome='clientes' %} Clientes
+            <a class="menu-link {% if 'usuario' in rota %}ativo{% endif %}" href="{% url 'listar_usuarios' %}">
+                {% include '_icone.html' with nome='usuarios' %} Usuários
             </a>
             {% if user.is_superuser %}
             <a class="menu-link {% if 'funcionario' in rota %}ativo{% endif %}" href="{% url 'listar_funcionarios' %}">
